@@ -1,0 +1,12 @@
+{
+  "name": "promptstudio-local",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check app.js"
+  },
+  "dependencies": {
+    "openai": "latest"
+  }
+}
