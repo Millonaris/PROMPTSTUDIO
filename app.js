@@ -68,8 +68,11 @@
   ];
   const ESPACIOS_LARGE = [
     { v: "salon_grande", l: "Salón grande", group: "large" },
+    { v: "salon_sobre_sofa", l: "Salón sobre sofá", group: "large" },
     { v: "comedor_amplio", l: "Comedor amplio", group: "large" },
+    { v: "comedor_aparador_largo", l: "Comedor sobre aparador largo", group: "large" },
     { v: "dormitorio_amplio", l: "Dormitorio amplio", group: "large" },
+    { v: "dormitorio_cabecero", l: "Dormitorio sobre cabecero", group: "large" },
     { v: "pared_grande", l: "Pared grande", group: "large" },
     { v: "zona_abierta", l: "Zona abierta", group: "large" },
     { v: "estancia_principal", l: "Estancia principal", group: "large" },
@@ -491,7 +494,7 @@
         tipo: "pared_4",
         tam: "gra",
         estilo: "japandi",
-        espacio: "dormitorio_amplio",
+        espacio: "dormitorio_cabecero",
         people: clone(DEFAULT_PEOPLE),
         luz: "neutra",
         deco: "equilibrada",
@@ -510,7 +513,7 @@
         tipo: "pared_2",
         tam: "med",
         estilo: "contemporaneo",
-        espacio: "salon_comedor",
+        espacio: "salon_sobre_sofa",
         people: { cantidad: "2", tipo: "pareja", rol: "secundaria", accion: "cafe", interaccion: "con_otra" },
         luz: "neutra",
         deco: "equilibrada",
@@ -636,11 +639,31 @@
     salon_grande: "un salón grande y bien proporcionado",
     comedor_amplio: "un comedor amplio",
     dormitorio_amplio: "un dormitorio amplio",
+    dormitorio_cabecero: "un dormitorio amplio con la composición situada sobre el cabecero",
     pared_grande: "una pared grande proporcionada",
     zona_abierta: "una zona abierta bien resuelta",
     estancia_principal: "la estancia principal",
+    salon_sobre_sofa: "un salón amplio con la composición situada sobre el sofá principal",
     salon_comedor: "un salón-comedor amplio",
+    comedor_aparador_largo: "un comedor amplio con la composición sobre un aparador largo",
     pared_mueble_largo: "una pared amplia con mueble largo",
+  };
+  const SPACE_PLACEMENT_TXT = {
+    aparador_peq: "sobre un aparador pequeño bien proporcionado",
+    consola_estrecha: "sobre una consola estrecha",
+    comoda_baja: "sobre una cómoda baja",
+    pared_corta: "sobre una pared corta bien medida",
+    salon_sobre_sofa: "sobre el sofá principal",
+    comedor_aparador_largo: "sobre un aparador largo de comedor",
+    dormitorio_cabecero: "sobre el cabecero de la cama",
+    pared_mueble_largo: "sobre un mueble largo bien proporcionado",
+    salon_comedor: "sobre una pared principal del salón-comedor, preferiblemente en relación con el sofá o un mueble largo",
+    salon_grande: "en una pared protagonista del salón, evitando vacíos excesivos",
+    comedor_amplio: "en una pared principal del comedor, bien vinculada al mobiliario",
+    dormitorio_amplio: "en una pared principal del dormitorio, con mobiliario proporcionado debajo o alrededor",
+    pared_grande: "en una pared grande pero visualmente contenida por mobiliario y escala",
+    zona_abierta: "en un frente de pared claro dentro de la zona abierta, sin quedar perdido",
+    estancia_principal: "en la pared protagonista de la estancia principal, bien integrada con el mobiliario",
   };
   const LUZ_TXT = {
     neutra: "mucha luz natural neutra y limpia",
@@ -1362,7 +1385,7 @@
     prompt += "; balance de blancos correcto, blancos verdaderamente blancos, sin dominante cálida, sin tonos amarillos, sin efecto dorado; ";
 
     if (!isHolding) {
-      prompt += "en la pared" + (variation.mueble && variation.mueble !== "sin mueble principal" ? " justo encima del mueble principal" : "") + " " + (count === 1 ? "aparece" : "aparecen") + " " + productDecorativeLabel(count) + " de tamaño visual " + tam.l.toLowerCase() + ", ";
+      prompt += getPlacementText(s.espacio, variation) + " " + (count === 1 ? "aparece" : "aparecen") + " " + productDecorativeLabel(count) + " de tamaño visual " + tam.l.toLowerCase() + ", ";
       prompt += (count === 1 ? "con proporción vertical " : "todas iguales entre sí, con proporción vertical ") + tam.ratio + ", " + marcoTxt + ", ";
       if (s.cristal && s.marco) {
         prompt += "con cristal real y reflejos suaves de ventana y de cortina, brillo sutil fotográfico, nunca espejo ni brillo exagerado, ";
@@ -1376,7 +1399,7 @@
       if (tam.compacto) {
         prompt += "la escena se desarrolla en un espacio compacto y recogido, evita paredes grandes vacías, escenas demasiado abiertas y mobiliario sobredimensionado; ";
       } else if (esp.group === "large") {
-        prompt += "el espacio amplio sigue estando proporcionado para que el producto no se pierda ni quede lejano; ";
+        prompt += "el espacio amplio sigue estando proporcionado para que el producto no se pierda ni quede lejano; en espacios grandes la composición debe anclarse claramente al mobiliario principal, como sofá, cabecero, aparador largo o mueble de apoyo; ";
       }
       prompt += variation.composicion + "; ";
       const decorBits = [variation.objetos.filter(Boolean).join(", "), variation.vegetal, variation.lampara].filter(Boolean).join(", ");
@@ -1411,7 +1434,7 @@
     if (pres.mode === "hold") {
       return "Fotografía lifestyle realista. Mujer natural sujetando " + (pres.count === 1 ? "1 lámina blanca vacía" : productCountLabel(pres.count) + " blancas vacías") + " " + tam.ratio + ", " + s.estilo + ", luz " + s.luz + ", materiales reales, no render.";
     }
-    return "Fotografía editorial interiorismo. " + (pres.count === 1 ? "1 lámina " + tam.l.toLowerCase() + " " + tam.ratio + " blanca vacía" : productCountLabel(pres.count) + " " + tam.l.toLowerCase() + " " + tam.ratio + " blancas vacías") + ", " + s.estilo + ", " + (ESPACIO_TXT[s.espacio] || "rincón compacto") + ", de frente a cámara, balance de blancos neutro, no render.";
+    return "Fotografía editorial interiorismo. " + (pres.count === 1 ? "1 lámina " + tam.l.toLowerCase() + " " + tam.ratio + " blanca vacía" : productCountLabel(pres.count) + " " + tam.l.toLowerCase() + " " + tam.ratio + " blancas vacías") + ", " + s.estilo + ", " + (ESPACIO_TXT[s.espacio] || "rincón compacto") + ", " + getPlacementShortText(s.espacio) + ", de frente a cámara, balance de blancos neutro, no render.";
   }
 
   function buildNegative() {
@@ -1498,6 +1521,9 @@
     if (pres.mode === "wall" && tam.compacto && esp.group === "large") {
       warnings.push("Producto pequeño en pared dentro de espacio grande → perderá escala. Mejor mantener espacios compactos y paredes cortas.");
     }
+    if (pres.mode === "wall" && !tam.compacto && ["salon_grande", "comedor_amplio", "pared_grande", "zona_abierta", "estancia_principal"].indexOf(s.espacio) >= 0) {
+      warnings.push("En espacios grandes conviene anclar visualmente el producto sobre sofá, cabecero, aparador largo o mueble principal para evitar que la pared se sienta vacía.");
+    }
     if ((s.estilo === "ibicenco" || s.estilo === "mediterraneo") && s.mob.intens === "muy_limpia") {
       warnings.push("Estilo ibicenco o mediterráneo con decoración muy limpia puede quedar austero. Considera decoración equilibrada.");
     }
@@ -1536,6 +1562,20 @@
 
   function getSpaceMeta(value) {
     return findByValue(ESPACIOS, value) || ESPACIOS[0];
+  }
+
+  function getPlacementText(spaceValue, variation) {
+    const explicit = SPACE_PLACEMENT_TXT[spaceValue];
+    if (explicit) return explicit;
+    if (variation.mueble && variation.mueble !== "sin mueble principal") {
+      return "en la pared justo encima del mueble principal";
+    }
+    return "en la pared";
+  }
+
+  function getPlacementShortText(spaceValue) {
+    const explicit = SPACE_PLACEMENT_TXT[spaceValue];
+    return explicit || "bien anclada al mobiliario";
   }
 
   function getAllowedSpaces(tipo, tam) {
