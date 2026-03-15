@@ -540,6 +540,43 @@
     "una mesa auxiliar pequeña de madera natural",
     "un mueble vintage pequeño con carácter",
   ];
+  const AUTO_MUEBLES_BY_SPACE = {
+    salon_grande: [
+      "un sofá de lino claro de líneas limpias",
+      "un sofá amplio en tono crudo con presencia serena",
+      "un sofá bajo y proporcionado en lino natural",
+    ],
+    salon_sobre_sofa: [
+      "un sofá de lino claro de líneas limpias",
+      "un sofá amplio en tono crudo con presencia serena",
+      "un sofá bajo y proporcionado en lino natural",
+    ],
+    dormitorio_amplio: [
+      "un cabecero tapizado claro y minimalista",
+      "un cabecero de lino natural muy sereno",
+      "una cama con cabecero bajo de tela clara",
+    ],
+    dormitorio_cabecero: [
+      "un cabecero tapizado claro y minimalista",
+      "un cabecero de lino natural muy sereno",
+      "una cama con cabecero bajo de tela clara",
+    ],
+    comedor_amplio: [
+      "un aparador largo de madera natural clara",
+      "un aparador lineal de comedor en roble lavado",
+      "un mueble bajo largo de comedor en madera clara",
+    ],
+    comedor_aparador_largo: [
+      "un aparador largo de madera natural clara",
+      "un aparador lineal de comedor en roble lavado",
+      "un mueble bajo largo de comedor en madera clara",
+    ],
+    pared_mueble_largo: [
+      "un mueble largo y bajo de madera clara",
+      "un aparador lineal ancho y proporcionado",
+      "un banco bajo largo de madera natural",
+    ],
+  };
   const COMPACTO_MUEBLES = [
     "un aparador pequeño de madera lavada",
     "una consola estrecha de roble",
@@ -658,9 +695,9 @@
     dormitorio_cabecero: "sobre el cabecero de la cama",
     pared_mueble_largo: "sobre un mueble largo bien proporcionado",
     salon_comedor: "sobre una pared principal del salón-comedor, preferiblemente en relación con el sofá o un mueble largo",
-    salon_grande: "en una pared protagonista del salón, evitando vacíos excesivos",
-    comedor_amplio: "en una pared principal del comedor, bien vinculada al mobiliario",
-    dormitorio_amplio: "en una pared principal del dormitorio, con mobiliario proporcionado debajo o alrededor",
+    salon_grande: "sobre el sofá principal",
+    comedor_amplio: "sobre un aparador largo de comedor",
+    dormitorio_amplio: "sobre el cabecero de la cama",
     pared_grande: "en una pared grande pero visualmente contenida por mobiliario y escala",
     zona_abierta: "en un frente de pared claro dentro de la zona abierta, sin quedar perdido",
     estancia_principal: "en la pared protagonista de la estancia principal, bien integrada con el mobiliario",
@@ -947,7 +984,7 @@
     const filteredMuebles = isCompacto
       ? MUEBLES_OPS.filter(function (o) { return o.v === "auto" || o.compacto || o.v === "sin_mueble"; })
       : MUEBLES_OPS;
-    const variation = resolveVariation(state.mob, state.seed, isCompacto);
+    const variation = resolveVariation(state.mob, state.seed, isCompacto, state.espacio);
     const prompt = state.generationMode === "ia" && ui.aiPrompt ? ui.aiPrompt : buildPrompt(state, variation, state.seed);
     const basePrompt = buildPrompt(state, variation, state.seed);
     const shortPrompt = buildShort(state);
@@ -1292,7 +1329,7 @@
     ui.loadingAi = true;
     render();
     try {
-      const variation = resolveVariation(state.mob, state.seed, !isHoldingPresentation(state.tipo) && getSizeMeta(state.tam).compacto);
+      const variation = resolveVariation(state.mob, state.seed, !isHoldingPresentation(state.tipo) && getSizeMeta(state.tam).compacto, state.espacio);
       const basePrompt = buildPrompt(state, variation, state.seed);
       const response = await fetch(API_BASE + "/api/prompt", {
         method: "POST",
@@ -1351,7 +1388,7 @@
   }
 
   function copyText(which) {
-    const variation = resolveVariation(state.mob, state.seed, !isHoldingPresentation(state.tipo) && getSizeMeta(state.tam).compacto);
+    const variation = resolveVariation(state.mob, state.seed, !isHoldingPresentation(state.tipo) && getSizeMeta(state.tam).compacto, state.espacio);
     const mainPrompt = state.generationMode === "ia" && ui.aiPrompt ? ui.aiPrompt : buildPrompt(state, variation, state.seed);
     const map = {
       main: mainPrompt,
@@ -1404,7 +1441,13 @@
       prompt += variation.composicion + "; ";
       const decorBits = [variation.objetos.filter(Boolean).join(", "), variation.vegetal, variation.lampara].filter(Boolean).join(", ");
       if (variation.mueble && variation.mueble !== "sin mueble principal") {
-        prompt += decorBits ? variation.mueble + " decorado con " + decorBits : variation.mueble + " con apoyo decorativo mínimo y proporcionado";
+        if (decorBits) {
+          prompt += usesLooseDecorAroundMainPiece(s.espacio)
+            ? variation.mueble + ", con " + decorBits + " repartidos de forma natural en apoyos cercanos y laterales"
+            : variation.mueble + " decorado con " + decorBits;
+        } else {
+          prompt += variation.mueble + " con apoyo decorativo mínimo y proporcionado";
+        }
       } else {
         prompt += decorBits ? "junto a la composición aparecen " + decorBits : "la composición se mantiene limpia, proporcionada y sin exceso de elementos";
       }
@@ -1521,7 +1564,7 @@
     if (pres.mode === "wall" && tam.compacto && esp.group === "large") {
       warnings.push("Producto pequeño en pared dentro de espacio grande → perderá escala. Mejor mantener espacios compactos y paredes cortas.");
     }
-    if (pres.mode === "wall" && !tam.compacto && ["salon_grande", "comedor_amplio", "pared_grande", "zona_abierta", "estancia_principal"].indexOf(s.espacio) >= 0) {
+    if (pres.mode === "wall" && !tam.compacto && ["pared_grande", "zona_abierta", "estancia_principal"].indexOf(s.espacio) >= 0) {
       warnings.push("En espacios grandes conviene anclar visualmente el producto sobre sofá, cabecero, aparador largo o mueble principal para evitar que la pared se sienta vacía.");
     }
     if ((s.estilo === "ibicenco" || s.estilo === "mediterraneo") && s.mob.intens === "muy_limpia") {
@@ -1540,8 +1583,9 @@
     return warnings;
   }
 
-  function resolveVariation(mob, seed, isCompacto) {
-    const pool = isCompacto ? COMPACTO_MUEBLES : AUTO_MUEBLES;
+  function resolveVariation(mob, seed, isCompacto, spaceValue) {
+    const contextualPool = AUTO_MUEBLES_BY_SPACE[spaceValue];
+    const pool = isCompacto ? COMPACTO_MUEBLES : (contextualPool || AUTO_MUEBLES);
     const mueble = mob.mueble === "auto" ? pick(pool, seed) : (findByValue(MUEBLES_OPS, mob.mueble) || {}).txt || pick(pool, seed);
     const apoyo = mob.apoyo === "auto" ? pick(AUTO_APOYOS, seed + 1) : (findByValue(APOYOS_OPS, mob.apoyo) || {}).txt || "";
     const lampara = mob.lampara === "auto" ? pick(AUTO_LAMPARAS, seed + 2) : (findByValue(LAMPARA_OPS, mob.lampara) || {}).txt || "";
@@ -1576,6 +1620,10 @@
   function getPlacementShortText(spaceValue) {
     const explicit = SPACE_PLACEMENT_TXT[spaceValue];
     return explicit || "bien anclada al mobiliario";
+  }
+
+  function usesLooseDecorAroundMainPiece(spaceValue) {
+    return ["salon_grande", "salon_sobre_sofa", "dormitorio_amplio", "dormitorio_cabecero"].indexOf(spaceValue) >= 0;
   }
 
   function getAllowedSpaces(tipo, tam) {
