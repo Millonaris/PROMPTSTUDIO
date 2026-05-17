@@ -1623,7 +1623,7 @@
   function isThirtyByFortyTriptych(tipo, tam) {
     const pres = getPresentationMeta(tipo);
     const size = getSizeMeta(tam);
-    return pres.mode === "wall" && pres.count === 3 && size.v === "med" && size.ratio === "4:5";
+    return pres.mode === "wall" && pres.count === 3 && size.v === "peq" && size.ratio === "3:4";
   }
 
   function getPlacementText(spaceValue, variation) {
