@@ -1437,7 +1437,7 @@
         ? "completamente blanca, vacía, sin diseño, sin texto y sin ilustración, "
         : "completamente blancas, vacías, sin diseño, sin texto y sin ilustración, ");
       prompt += (DIST_TXT[s.dist] || DIST_TXT.horizontal) + ", ";
-      prompt += "vistas totalmente de frente a cámara, rectas, paralelas al plano de la imagen, nunca en diagonal, nunca inclinadas; ";
+      prompt += "vistas totalmente de frente a cámara, en plano frontal absoluto, rectas, paralelas al plano de la imagen, con la cámara perfectamente enfrentada a las láminas, sin perspectiva lateral, sin ángulo tres cuartos, sin escorzo, nunca en diagonal, nunca inclinadas, con marcos simétricos y bordes verticales completamente paralelos; ";
       prompt += "el producto es el protagonista principal y ocupa un peso visual claro dentro del encuadre; ";
       if (isThirtyByFortyTriptych(s.tipo, s.tam)) {
         prompt += "al tratarse de un set de 3 cuadros de 30x40, la escena debe sentirse contenida, doméstica y proporcionada, anclada a un rincón o mueble pequeño, nunca a una pared enorme ni a una estancia excesivamente abierta; ";
@@ -1486,11 +1486,11 @@
     if (pres.mode === "hold") {
       return "Fotografía lifestyle realista. Mujer natural sujetando " + (pres.count === 1 ? "1 lámina blanca vacía" : productCountLabel(pres.count) + " blancas vacías") + " " + tam.ratio + ", " + s.estilo + ", luz " + s.luz + ", materiales reales, no render.";
     }
-    return "Fotografía editorial interiorismo. " + (pres.count === 1 ? "1 lámina " + tam.l.toLowerCase() + " " + tam.ratio + " blanca vacía" : productCountLabel(pres.count) + " " + tam.l.toLowerCase() + " " + tam.ratio + " blancas vacías") + ", " + s.estilo + ", " + (ESPACIO_TXT[s.espacio] || "rincón compacto") + ", " + getPlacementShortText(s.espacio) + ", de frente a cámara, balance de blancos neutro, no render.";
+    return "Fotografía editorial interiorismo. " + (pres.count === 1 ? "1 lámina " + tam.l.toLowerCase() + " " + tam.ratio + " blanca vacía" : productCountLabel(pres.count) + " " + tam.l.toLowerCase() + " " + tam.ratio + " blancas vacías") + ", " + s.estilo + ", " + (ESPACIO_TXT[s.espacio] || "rincón compacto") + ", " + getPlacementShortText(s.espacio) + ", de frente a cámara, plano frontal absoluto, sin perspectiva lateral, balance de blancos neutro, no render.";
   }
 
   function buildNegative() {
-    return "text on prints, design on paper, illustration on canvas, printed artwork, CGI, 3D render, artificial showroom, diagonal frames, tilted prints, lateral perspective, yellow light, golden tones, warm cast, overexposed, heavy shadows, blurry product, unequal frame sizes, mirror reflections, glossy plastic sheen, render interior, oversized empty wall, open empty loft, dominant people, product out of focus";
+    return "text on prints, design on paper, illustration on canvas, printed artwork, CGI, 3D render, artificial showroom, diagonal frames, tilted prints, lateral perspective, side perspective, oblique camera angle, three-quarter view, 3/4 view, skewed frames, foreshortening, off-axis composition, rotated frames, converging verticals, unequal frame sizes, yellow light, golden tones, warm cast, overexposed, heavy shadows, blurry product, mirror reflections, glossy plastic sheen, render interior, oversized empty wall, open empty loft, dominant people, product out of focus";
   }
 
   function buildPeopleText(s, seed) {
