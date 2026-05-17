@@ -58,7 +58,9 @@
     { v: "rincon_peq", l: "Rincón pequeño", group: "small" },
     { v: "aparador_peq", l: "Aparador pequeño", group: "small" },
     { v: "consola_estrecha", l: "Consola estrecha", group: "small" },
+    { v: "mueble_auxiliar", l: "Mueble auxiliar", group: "small" },
     { v: "lectura", l: "Rincón de lectura", group: "small" },
+    { v: "relax", l: "Rincón de relax", group: "small" },
     { v: "pasillo_corto", l: "Pasillo corto", group: "small" },
     { v: "recibidor_peq", l: "Recibidor pequeño", group: "small" },
     { v: "comoda_baja", l: "Cómoda baja", group: "small" },
@@ -666,7 +668,9 @@
     rincon_peq: "un rincón pequeño y compacto",
     aparador_peq: "el entorno de un aparador pequeño",
     consola_estrecha: "el entorno de una consola estrecha",
+    mueble_auxiliar: "el entorno de un mueble auxiliar pequeño",
     lectura: "un rincón de lectura acogedor",
+    relax: "un rincón de relax sereno y contenido",
     pasillo_corto: "un pasillo corto",
     recibidor_peq: "un recibidor pequeño",
     comoda_baja: "el entorno de una cómoda baja",
@@ -688,7 +692,9 @@
   const SPACE_PLACEMENT_TXT = {
     aparador_peq: "sobre un aparador pequeño bien proporcionado",
     consola_estrecha: "sobre una consola estrecha",
+    mueble_auxiliar: "sobre un mueble auxiliar pequeño y bien escalado",
     comoda_baja: "sobre una cómoda baja",
+    relax: "en una pared corta asociada a un rincón de relax",
     pared_corta: "sobre una pared corta bien medida",
     salon_sobre_sofa: "sobre el sofá principal",
     comedor_aparador_largo: "sobre un aparador largo de comedor",
@@ -1433,6 +1439,9 @@
       prompt += (DIST_TXT[s.dist] || DIST_TXT.horizontal) + ", ";
       prompt += "vistas totalmente de frente a cámara, rectas, paralelas al plano de la imagen, nunca en diagonal, nunca inclinadas; ";
       prompt += "el producto es el protagonista principal y ocupa un peso visual claro dentro del encuadre; ";
+      if (isThirtyByFortyTriptych(s.tipo, s.tam)) {
+        prompt += "al tratarse de un set de 3 cuadros de 30x40, la escena debe sentirse contenida, doméstica y proporcionada, anclada a un rincón o mueble pequeño, nunca a una pared enorme ni a una estancia excesivamente abierta; ";
+      }
       if (tam.compacto) {
         prompt += "la escena se desarrolla en un espacio compacto y recogido, evita paredes grandes vacías, escenas demasiado abiertas y mobiliario sobredimensionado; ";
       } else if (esp.group === "large") {
@@ -1561,6 +1570,9 @@
     const tam = getSizeMeta(s.tam);
     const esp = getSpaceMeta(s.espacio);
     const pres = getPresentationMeta(s.tipo);
+    if (isThirtyByFortyTriptych(s.tipo, s.tam) && esp.group === "large") {
+      warnings.push("Un set de 3 cuadros 30x40 no debería vivir en una pared grande o estancia abierta. Mejor rincón, aparador, consola, cómoda o mueble auxiliar.");
+    }
     if (pres.mode === "wall" && tam.compacto && esp.group === "large") {
       warnings.push("Producto pequeño en pared dentro de espacio grande → perderá escala. Mejor mantener espacios compactos y paredes cortas.");
     }
@@ -1608,6 +1620,12 @@
     return findByValue(ESPACIOS, value) || ESPACIOS[0];
   }
 
+  function isThirtyByFortyTriptych(tipo, tam) {
+    const pres = getPresentationMeta(tipo);
+    const size = getSizeMeta(tam);
+    return pres.mode === "wall" && pres.count === 3 && size.v === "med" && size.ratio === "4:5";
+  }
+
   function getPlacementText(spaceValue, variation) {
     const explicit = SPACE_PLACEMENT_TXT[spaceValue];
     if (explicit) return explicit;
@@ -1630,6 +1648,9 @@
     const pres = getPresentationMeta(tipo);
     const size = getSizeMeta(tam);
     if (pres.mode === "hold") return ESPACIOS;
+    if (isThirtyByFortyTriptych(tipo, tam)) {
+      return ESPACIOS.filter(function (o) { return o.group === "small"; });
+    }
     if (size.compacto) return ESPACIOS.filter(function (o) { return o.group === "small"; });
     return ESPACIOS;
   }
@@ -1664,6 +1685,7 @@
     const pres = getPresentationMeta(tipo);
     const size = getSizeMeta(tam);
     if (pres.mode === "hold") return "La mujer sujetando las láminas no obliga a compactar el espacio y puede convivir con escenas más amplias.";
+    if (isThirtyByFortyTriptych(tipo, tam)) return "El set de 3 cuadros 30x40 se tratará como una composición contenida: rincones, aparadores, consolas, cómodas y pequeños muebles, nunca paredes grandes ni estancias abiertas.";
     if (size.compacto) return "Con producto pequeño en pared el sistema limitará la escena a espacios compactos, paredes cortas y mobiliario proporcionado.";
     if (size.v === "gra") return "El tamaño grande habilita también espacios amplios siempre que el producto siga dominando la escena.";
     return "El sistema mantendrá el producto proporcionado al espacio y evitará paredes vacías demasiado abiertas.";
